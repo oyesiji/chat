@@ -8,17 +8,22 @@
 
 import UIKit
 import  FirebaseAuth
+import GoogleSignIn
 
-class LoginViewController: UIViewController {
+class LoginViewController: UIViewController, GIDSignInUIDelegate {
     
     @IBOutlet weak var anonymousButton: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
         anonymousButton.layer.borderWidth = 2.0
         anonymousButton.layer.borderColor = UIColor.white.cgColor
-        
+        GIDSignIn.sharedInstance().clientID = "127803739780-8esa0u9remefrvphsci1a3mslusdp9h9.apps.googleusercontent.com"
         
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+       GIDSignIn.sharedInstance().uiDelegate = self
     }
     
     override func didReceiveMemoryWarning() {
@@ -30,6 +35,16 @@ class LoginViewController: UIViewController {
         Helper.helper.loginAnonymous();
     }
     @IBAction func login(_ sender: Any) {
+        GIDSignIn.sharedInstance().signIn();
+    }
+    
+    func sign(_ signIn: GIDSignIn!, didDisconnectWith user: GIDGoogleUser!, withError error: Error!) {
+        
+    }
+    
+    func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
+        //print(user.authentication)
+        
     }
     
 }

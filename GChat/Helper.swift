@@ -36,4 +36,9 @@ class Helper {
         
     }
     
+    
+    func logInWithGoogle(){
+        
+    }
+    
 }
