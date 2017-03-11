@@ -10,7 +10,10 @@ import UIKit
 import JSQMessagesViewController
 
 class ChatViewController: JSQMessagesViewController {
-
+    var messages = [JSQMessage]()
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.senderId = "1"
@@ -32,6 +35,48 @@ class ChatViewController: JSQMessagesViewController {
         appDelegate.window?.rootViewController = naviVc
         
         
+    }
+    
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAt indexPath: IndexPath!) -> JSQMessageBubbleImageDataSource! {
+        let bubbleFactory = JSQMessagesBubbleImageFactory()
+        return bubbleFactory?.outgoingMessagesBubbleImage(with: UIColor.black);
+    }
+    
+    
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAt indexPath: IndexPath!) -> JSQMessageAvatarImageDataSource! {
+        return nil
+    }
+    
+    
+    public override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count;
+    }
+    
+    
+    // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
+  
+    public override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = super.collectionView(collectionView, cellForItemAt: indexPath) as! JSQMessagesCollectionViewCell
+        return cell;
+    }
+    
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
+        return messages[indexPath.item]
+    }
+    
+  
+    
+
+    
+    override func didPressAccessoryButton(_ sender: UIButton!) {
+         print("### we are here")
+    }
+    
+     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!){
+      
+        messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text));
+          print("### we are here \(text)")
+        collectionView.reloadData();
     }
     /*
     // MARK: - Navigation
