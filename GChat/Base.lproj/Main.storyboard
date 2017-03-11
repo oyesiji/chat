@@ -92,6 +92,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="Qrw-x1-irw">
                         <barButtonItem key="leftBarButtonItem" title="Log out" id="cbD-v5-UWQ">
+                            <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="logOut:" destination="hzH-Sy-DyC" id="uT5-Uh-VrC"/>
                             </connections>
@@ -124,9 +125,10 @@
             <objects>
                 <navigationController storyboardIdentifier="navigationVC" automaticallyAdjustsScrollViewInsets="NO" id="QIP-GY-FCB" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="u4v-jC-YOY">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="u4v-jC-YOY">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="barTintColor" red="0.14901960784313725" green="0.26666666666666666" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
