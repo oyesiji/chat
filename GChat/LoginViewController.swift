@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import  FirebaseAuth
 
 class LoginViewController: UIViewController {
     
@@ -26,14 +27,7 @@ class LoginViewController: UIViewController {
     }
     
     @IBAction func loginAnonymous(_ sender: Any) {
-        print("Login Anonym")
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let naviVc = storyboard.instantiateViewController(withIdentifier: "navigationVC") as! UINavigationController
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        appDelegate.window?.rootViewController = naviVc
-        
-        
-        
+        Helper.helper.loginAnonymous();
     }
     @IBAction func login(_ sender: Any) {
     }
