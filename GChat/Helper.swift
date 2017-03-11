@@ -11,7 +11,7 @@ import Foundation
 import FirebaseAuth
 import UIKit
 import Firebase
-
+import GoogleSignIn
 
 class Helper {
     static let helper = Helper()
@@ -37,7 +37,23 @@ class Helper {
     }
     
     
-    func logInWithGoogle(){
+    func logInWithGoogle(authentication: GIDAuthentication){
+        let credential = FIRGoogleAuthProvider.credential(withIDToken: authentication.idToken, accessToken: authentication.accessToken)
+        FIRAuth.auth()?.signIn(with: credential){ (user, error) in
+            if error == nil {
+                print("User Id : \(user?.uid)");
+                print("User Email : \(user?.email)");
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let naviVc = storyboard.instantiateViewController(withIdentifier: "navigationVC") as! UINavigationController
+                let appDelegate = UIApplication.shared.delegate as! AppDelegate
+                appDelegate.window?.rootViewController = naviVc
+                
+            }else{
+                print(error?.localizedDescription )
+                return
+            }
+        }
+
         
     }
     
