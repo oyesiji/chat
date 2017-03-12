@@ -8,6 +8,8 @@ target 'GChat' do
    pod 'Firebase/Auth'
    pod 'GoogleSignIn'
    pod 'JSQMessagesViewController'
+   pod 'Firebase/Database'
+   pod 'Firebase/Storage'
   # Pods for GChat
 
   target 'GChatTests' do

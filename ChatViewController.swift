@@ -10,17 +10,32 @@ import UIKit
 import JSQMessagesViewController
 import MobileCoreServices
 import AVKit
+import FirebaseDatabase
+
 class ChatViewController: JSQMessagesViewController{
     var messages = [JSQMessage]()
-    
+     let messageRef = FIRDatabase.database().reference().child("messages")
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.senderId = "1"
         self.senderDisplayName = "abbey"
+       
+        print(messageRef)
+       
+      //  messageRef.childByAutoId().setValue("first Message")
+     //   messageRef.childByAutoId().setValue("second Message")
+     //   messageRef.observe(FIRDataEventType.childAdded, with: { (snapshot) in
+ //
+        //    if let dict = snapshot.value as? NSDictionary {
+       //         print(dict)
+        //    }
+           
+      //  })
         
-        // Do any additional setup after loading the view.
+       observeMessages()
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -121,12 +136,46 @@ class ChatViewController: JSQMessagesViewController{
         self.present(mediaPicker, animated: true, completion: nil)
     }
     
-     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!){
-      
-        messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text));
-          print("### we are here \(text)")
-        collectionView.reloadData();
+    
+    func observeMessages(){
+        messageRef.observe(.childAdded, with: {
+            snapshot in
+            if let dict = snapshot.value as? [String:AnyObject] {
+                let MediaType = dict["MediaType"] as! String
+                let senderId = dict["senderId"] as! String
+                let senderName = dict["senderName"] as! String
+                if let text = dict["text"] as? String {
+                     self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, text: text));
+                }else {
+                    let fileUrl = dict["fileUrl"] as! String
+                    let data = NSData(contentsOf: NSURL(string:fileUrl)! as URL)
+                    let picture = UIImage(data: data! as Data)
+                    let photo = JSQPhotoMediaItem(image:picture)
+                    self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, media: photo));
+
+                    
+                }
+                
+                
+               
+               
+                 self.collectionView.reloadData();
+            }
+            
+            
+           
+  
+            
+        })
     }
+    
+     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!){
+        let newMessage = messageRef.childByAutoId()
+      //  newMessage.setValue(<#T##value: Any?##Any?#>)
+        let messageData = ["text":text, "senderId":senderId, "senderName":senderDisplayName, "MediaType" :"TEXT"]
+        newMessage.setValue(messageData)
+        //messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text));
+             }
     /*
     // MARK: - Navigation
 
