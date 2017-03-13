@@ -11,7 +11,8 @@ import JSQMessagesViewController
 import MobileCoreServices
 import AVKit
 import FirebaseDatabase
-
+import FirebaseStorage
+import FirebaseAuth
 class ChatViewController: JSQMessagesViewController{
     var messages = [JSQMessage]()
      let messageRef = FIRDatabase.database().reference().child("messages")
@@ -46,6 +47,15 @@ class ChatViewController: JSQMessagesViewController{
 
     @IBAction func logOut(_ sender: Any) {
         print("Login Anonym")
+        do{
+            try FIRAuth.auth()?.signOut()
+        }catch let error {
+            print(error)
+        }
+        
+        
+        
+        
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let naviVc = storyboard.instantiateViewController(withIdentifier: "loginVC") as! LoginViewController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -141,20 +151,33 @@ class ChatViewController: JSQMessagesViewController{
         messageRef.observe(.childAdded, with: {
             snapshot in
             if let dict = snapshot.value as? [String:AnyObject] {
-                let MediaType = dict["MediaType"] as! String
+                let mediaType = dict["MediaType"] as! String
                 let senderId = dict["senderId"] as! String
                 let senderName = dict["senderName"] as! String
-                if let text = dict["text"] as? String {
+                if mediaType == "TEXT" {
+                    let text = dict["text"] as! String
                      self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, text: text));
-                }else {
+                }else if mediaType == "PHOTO"{
                     let fileUrl = dict["fileUrl"] as! String
-                    let data = NSData(contentsOf: NSURL(string:fileUrl)! as URL)
-                    let picture = UIImage(data: data! as Data)
-                    let photo = JSQPhotoMediaItem(image:picture)
+                    let url = NSURL(string:fileUrl)
+                    let data = NSData(contentsOf: url! as URL)
+                    let picture = UIImage(data:data! as Data);
+                    let photo = JSQPhotoMediaItem(image:picture);
                     self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, media: photo));
-
+                }else if mediaType == "VIDEO"{
+                    let fileUrl = dict["fileUrl"] as! String
+                    let video = NSURL(string: fileUrl)
                     
+                    
+                    
+                    
+                    let videoItem = JSQVideoMediaItem(fileURL: video as URL!, isReadyToPlay: true)
+                    
+                    
+                   self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, media: videoItem));
                 }
+                
+                
                 
                 
                
@@ -176,16 +199,57 @@ class ChatViewController: JSQMessagesViewController{
         newMessage.setValue(messageData)
         //messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text));
              }
-    /*
-    // MARK: - Navigation
+  
+    func sendMedia(picture:UIImage?,video:NSURL?){
+        if let picture = picture {
+            let filePath = "\(FIRAuth.auth()!.currentUser!.uid)/\(NSDate.timeIntervalSinceReferenceDate)"
+            print(filePath)
+            let data = UIImageJPEGRepresentation(picture, 0.1)
+            let metadata = FIRStorageMetadata()
+            metadata.contentType = "image/jpg"
+            FIRStorage.storage().reference().child(filePath).put(data!, metadata: metadata){
+                (metadata,error) in
+                if error != nil
+                {
+                    print(error?.localizedDescription)
+                }
+                let fileUrl = metadata!.downloadURLs![0].absoluteString
+                let newMessage = self.messageRef.childByAutoId();
+                
+                let messageData = ["fileUrl":fileUrl, "senderId":self.senderId, "senderName":self.senderDisplayName, "MediaType" :"PHOTO"]
+                newMessage.setValue(messageData)
+                
+                
+                
+            }
+        }else if let video = video {
+            let filePath = "\(FIRAuth.auth()!.currentUser!.uid)/\(NSDate.timeIntervalSinceReferenceDate)"
+            print(filePath)
+            let data = NSData(contentsOf: video as URL)
+            let metadata = FIRStorageMetadata()
+            metadata.contentType = "video/mp4"
+            FIRStorage.storage().reference().child(filePath).put(data! as Data, metadata: metadata){
+                (metadata,error) in
+                if error != nil
+                {
+                    print(error?.localizedDescription)
+                }
+                let fileUrl = metadata!.downloadURLs![0].absoluteString
+                let newMessage = self.messageRef.childByAutoId();
+                
+                let messageData = ["fileUrl":fileUrl, "senderId":self.senderId, "senderName":self.senderDisplayName, "MediaType" :"PHOTO"]
+                newMessage.setValue(messageData)
+                
+                
+                
+            }
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        }
+      
+       
+    
     }
-    */
-
+    
 }
 
 
@@ -194,12 +258,13 @@ extension ChatViewController:UIImagePickerControllerDelegate,UINavigationControl
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         print("#### it works")
         if let picture = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            let photo = JSQPhotoMediaItem(image: picture);
-            messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, media: photo))
+        //    let photo = JSQPhotoMediaItem(image: picture);
+            //messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, media: photo))
+            sendMedia(picture: picture, video: nil)
         }else if let video = info[UIImagePickerControllerMediaURL] as? NSURL{
-            let videoItem = JSQVideoMediaItem(fileURL: video as URL!, isReadyToPlay: true)
-            messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, media: videoItem))
-            
+           // let videoItem = JSQVideoMediaItem(fileURL: video as URL!, isReadyToPlay: true)
+            //messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, media: videoItem))
+            sendMedia(picture: nil, video:video)
         }
         
         

@@ -57,4 +57,16 @@ class Helper {
         
     }
     
+    
+    public func switchToNavigationController(){
+        let storyBoard = UIStoryboard(name: "Main", bundle: nil);
+        let naviVC = storyBoard.instantiateViewController(withIdentifier: "navigationVC") as! UINavigationController
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.window?.rootViewController = naviVC
+        
+        
+    }
+    
+    
+    
 }

@@ -9,7 +9,7 @@
 import UIKit
 import FirebaseAuth
 import GoogleSignIn
-
+import FirebaseAuth
 class LoginViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDelegate  {
     
     @IBOutlet weak var anonymousButton: UIButton!
@@ -25,7 +25,16 @@ class LoginViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDeleg
     }
     
     override func viewWillAppear(_ animated: Bool) {
-    
+        FIRAuth.auth()?.addStateDidChangeListener({(auth:FIRAuth, user:FIRUser?) in
+            if user != nil {
+                Helper.helper.switchToNavigationController();
+            }else{
+                print("Unauthorized")
+            }
+        
+        })
+        
+        
     }
     
     override func didReceiveMemoryWarning() {
