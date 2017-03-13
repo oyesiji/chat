@@ -20,20 +20,12 @@ class ChatViewController: JSQMessagesViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.senderId = "1"
+        let currentUser = FIRAuth.auth()?.currentUser
+        
+        self.senderId = currentUser?.uid;
         self.senderDisplayName = "abbey"
        
         print(messageRef)
-       
-      //  messageRef.childByAutoId().setValue("first Message")
-     //   messageRef.childByAutoId().setValue("second Message")
-     //   messageRef.observe(FIRDataEventType.childAdded, with: { (snapshot) in
- //
-        //    if let dict = snapshot.value as? NSDictionary {
-       //         print(dict)
-        //    }
-           
-      //  })
         
        observeMessages()
         
@@ -52,10 +44,6 @@ class ChatViewController: JSQMessagesViewController{
         }catch let error {
             print(error)
         }
-        
-        
-        
-        
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let naviVc = storyboard.instantiateViewController(withIdentifier: "loginVC") as! LoginViewController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -67,8 +55,18 @@ class ChatViewController: JSQMessagesViewController{
     
     
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAt indexPath: IndexPath!) -> JSQMessageBubbleImageDataSource! {
-        let bubbleFactory = JSQMessagesBubbleImageFactory()
-        return bubbleFactory?.outgoingMessagesBubbleImage(with: UIColor.black);
+        let message = messages[indexPath.item]
+         let bubbleFactory = JSQMessagesBubbleImageFactory()
+        if message.senderId == self.senderId {
+           
+            return bubbleFactory?.outgoingMessagesBubbleImage(with: UIColor.black);
+        }else{
+            
+            return bubbleFactory?.incomingMessagesBubbleImage(with: UIColor.blue);
+        }
+        
+        
+       
     }
     
     
@@ -164,17 +162,25 @@ class ChatViewController: JSQMessagesViewController{
                     let picture = UIImage(data:data! as Data);
                     let photo = JSQPhotoMediaItem(image:picture);
                     self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, media: photo));
+                    if self.senderId == senderId{
+                         photo?.appliesMediaViewMaskAsOutgoing = true
+                    }else{
+                        photo?.appliesMediaViewMaskAsOutgoing = false
+
+                    }
+                   
                 }else if mediaType == "VIDEO"{
                     let fileUrl = dict["fileUrl"] as! String
                     let video = NSURL(string: fileUrl)
-                    
-                    
-                    
-                    
-                    let videoItem = JSQVideoMediaItem(fileURL: video as URL!, isReadyToPlay: true)
-                    
-                    
-                   self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, media: videoItem));
+                     let videoItem = JSQVideoMediaItem(fileURL: video as URL!, isReadyToPlay: true)
+                    if self.senderId == senderId{
+                        videoItem?.appliesMediaViewMaskAsOutgoing = true
+                    }else{
+                        videoItem?.appliesMediaViewMaskAsOutgoing = false
+                        
+                    }
+                   
+                    self.messages.append(JSQMessage(senderId: senderId, displayName: senderName, media: videoItem));
                 }
                 
                 
@@ -198,6 +204,7 @@ class ChatViewController: JSQMessagesViewController{
         let messageData = ["text":text, "senderId":senderId, "senderName":senderDisplayName, "MediaType" :"TEXT"]
         newMessage.setValue(messageData)
         //messages.append(JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text));
+        self.finishSendingMessage();
              }
   
     func sendMedia(picture:UIImage?,video:NSURL?){
